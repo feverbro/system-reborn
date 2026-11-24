@@ -85,6 +85,17 @@ public final class DesktopHudOverlay {
         });
     }
 
+    public static void close() {
+        if (!WINDOWS) return;
+        SwingUtilities.invokeLater(() -> {
+            if (frame != null) {
+                frame.dispose();
+                frame = null;
+                panel = null;
+            }
+        });
+    }
+
     private static String on(boolean value) { return value ? "ON" : "OFF"; }
 
     private static void enableClickThrough(JFrame window) {
