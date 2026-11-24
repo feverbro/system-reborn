@@ -19,7 +19,7 @@ public final class ClickGuiScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
         renderBackground(g, mouseX, mouseY, delta);
-        int height = 48 + MODULES.length * ROW;
+        int height = 67 + MODULES.length * ROW;
         int left = (this.width - WIDTH) / 2;
         int top = (this.height - height) / 2;
         g.fill(left, top, left + WIDTH, top + height, 0xF010131C);
@@ -44,7 +44,7 @@ public final class ClickGuiScreen extends Screen {
     @Override
     public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         if (click.button() == 0) {
-            int height = 48 + MODULES.length * ROW;
+            int height = 67 + MODULES.length * ROW;
             int left = (this.width - WIDTH) / 2;
             int top = (this.height - height) / 2;
             for (int i = 0; i < MODULES.length; i++) {
