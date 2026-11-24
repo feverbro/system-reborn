@@ -1,5 +1,6 @@
 {
   "key.categories.systemsreborn": "SYSTEMS REBORN",
   "key.systemsreborn.clickgui": "Open ClickGUI",
-  "key.systemsreborn.hud": "Toggle Desktop HUD"
+  "key.systemsreborn.hud": "Toggle Desktop HUD",
+  "key.systemsreborn.hud_editor": "Toggle HUD Editor"
 }
