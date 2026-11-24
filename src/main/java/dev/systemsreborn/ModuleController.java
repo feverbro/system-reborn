@@ -10,7 +10,6 @@ public final class ModuleController {
     public static boolean aimAssist = false;
     public static boolean triggerBot = false;
     public static boolean autoSprint = false;
-    public static boolean noBob = false;
     private static int triggerDelayTicks = 0;
 
     private ModuleController() {}
@@ -25,7 +24,7 @@ public final class ModuleController {
 
     private static void runAimAssist(Minecraft mc) {
         Player self = mc.player;
-        if (!mc.options.keyUse.isDown()) return;
+        if (!mc.options.keyAttack.isDown()) return;
         Player best = null;
         double bestAngle = 12.0;
         for (Player candidate : mc.level.players()) {
