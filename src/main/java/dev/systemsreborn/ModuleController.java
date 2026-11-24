@@ -88,7 +88,7 @@ public final class ModuleController {
                 || !(mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit)) return;
         var state = mc.level.getBlockState(hit.getBlockPos());
         var inventory = mc.player.getInventory();
-        int bestSlot = inventory.selected;
+        int bestSlot = inventory.getSelectedSlot();
         float bestSpeed = inventory.getItem(bestSlot).getDestroySpeed(state);
 
         for (int slot = 0; slot < 9; slot++) {
@@ -98,7 +98,7 @@ public final class ModuleController {
                 bestSlot = slot;
             }
         }
-        inventory.selected = bestSlot;
+        inventory.setSelectedSlot(bestSlot);
     }
 
     private static double wrapDegrees(double value) {
