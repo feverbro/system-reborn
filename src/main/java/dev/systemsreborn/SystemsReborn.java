@@ -10,11 +10,15 @@ import org.lwjgl.glfw.GLFW;
 public final class SystemsReborn implements ClientModInitializer {
     public static final String MOD_ID = "systemsreborn";
     private static KeyMapping clickGuiKey;
+    private static KeyMapping hudToggleKey;
 
     @Override
     public void onInitializeClient() {
         clickGuiKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.systemsreborn.clickgui", GLFW.GLFW_KEY_RIGHT_SHIFT,
+                KeyMapping.Category.MISC));
+        hudToggleKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.systemsreborn.hud", GLFW.GLFW_KEY_F8,
                 KeyMapping.Category.MISC));
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
         DesktopHudOverlay.start();
@@ -24,6 +28,9 @@ public final class SystemsReborn implements ClientModInitializer {
         while (clickGuiKey.consumeClick()) {
             if (client.screen == null) client.setScreen(new ClickGuiScreen());
             else if (client.screen instanceof ClickGuiScreen) client.setScreen(null);
+        }
+        while (hudToggleKey.consumeClick()) {
+            ModuleController.desktopHud = !ModuleController.desktopHud;
         }
         ModuleController.tick(client);
         if (ModuleController.desktopHud) DesktopHudOverlay.update(client);
