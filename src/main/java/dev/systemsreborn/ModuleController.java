@@ -10,7 +10,6 @@ public final class ModuleController {
     public static volatile boolean aimAssist = false;
     public static volatile boolean triggerBot = false;
     public static volatile boolean autoSprint = false;
-    public static volatile boolean autoTool = false;
     public static volatile boolean desktopHud = true;
 
     private static int triggerDelayTicks;
@@ -23,7 +22,6 @@ public final class ModuleController {
         if (autoSprint && mc.options.keyUp.isDown()) mc.player.setSprinting(true);
         if (aimAssist) runAimAssist(mc);
         if (triggerBot) runTriggerBot(mc);
-        if (autoTool) runAutoTool(mc);
         if (triggerDelayTicks > 0) triggerDelayTicks--;
     }
 
@@ -81,24 +79,6 @@ public final class ModuleController {
         mc.gameMode.attack(mc.player, player);
         mc.player.swing(InteractionHand.MAIN_HAND);
         triggerDelayTicks = 3;
-    }
-
-    private static void runAutoTool(Minecraft mc) {
-        if (!mc.options.keyAttack.isDown() || mc.hitResult == null
-                || !(mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit)) return;
-        var state = mc.level.getBlockState(hit.getBlockPos());
-        var inventory = mc.player.getInventory();
-        int bestSlot = inventory.getSelectedSlot();
-        float bestSpeed = inventory.getItem(bestSlot).getDestroySpeed(state);
-
-        for (int slot = 0; slot < 9; slot++) {
-            float speed = inventory.getItem(slot).getDestroySpeed(state);
-            if (speed > bestSpeed) {
-                bestSpeed = speed;
-                bestSlot = slot;
-            }
-        }
-        inventory.setSelectedSlot(bestSlot);
     }
 
     private static double wrapDegrees(double value) {
