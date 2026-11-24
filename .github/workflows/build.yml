@@ -5,7 +5,7 @@ on:
   pull_request:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,7 +20,24 @@ jobs:
           gradle-version: '9.5.1'
       - name: Build remapped mod JAR
         run: gradle build --no-daemon
+      - name: Keep only the installable mod JAR
+        shell: bash
+        run: |
+          mkdir -p release
+          find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' -exec cp {} release/ \;
+          test "$(find release -maxdepth 1 -type f -name '*.jar' | wc -l)" -eq 1
       - uses: actions/upload-artifact@v4
         with:
           name: SYSTEMS-REBORN-${{ github.sha }}
-          path: build/libs/*-*.jar
+          path: release/*.jar
+      - name: Publish direct JAR download
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-${{ github.sha }}
+          name: SYSTEMS REBORN dev-${{ github.sha }}
+          prerelease: true
+          files: release/*.jar
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
