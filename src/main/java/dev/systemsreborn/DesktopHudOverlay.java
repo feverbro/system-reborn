@@ -37,6 +37,11 @@ public final class DesktopHudOverlay {
     private static int offsetY;
     private static int dragX;
     private static int dragY;
+    private static int dragElement = -1;
+    private static final int[] WIDGET_X = {18, 318, 18, 18, 382};
+    private static final int[] WIDGET_Y = {18, 18, 142, 208, 142};
+    private static final int[] WIDGET_W = {285, 380, 350, 350, 145};
+    private static final int[] WIDGET_H = {112, 62, 54, 70, 54};
 
     private DesktopHudOverlay() {}
 
@@ -56,6 +61,9 @@ public final class DesktopHudOverlay {
                 @Override
                 public void mousePressed(MouseEvent e) {
                     if (ModuleController.hudEditor) {
+                        float scale = ModuleController.hudScale();
+                        dragElement = findWidget(Math.round(e.getX() / scale),
+                                Math.round(e.getY() / scale));
                         dragX = e.getXOnScreen();
                         dragY = e.getYOnScreen();
                     }
@@ -69,13 +77,26 @@ public final class DesktopHudOverlay {
                     int dy = e.getYOnScreen() - dragY;
                     dragX = e.getXOnScreen();
                     dragY = e.getYOnScreen();
-                    offsetX += dx;
-                    offsetY += dy;
-                    frame.setLocation(frame.getX() + dx, frame.getY() + dy);
+                    if (dragElement >= 0) {
+                        float scale = ModuleController.hudScale();
+                        WIDGET_X[dragElement] += Math.round(dx / scale);
+                        WIDGET_Y[dragElement] += Math.round(dy / scale);
+                        panel.repaint();
+                    } else {
+                        offsetX += dx;
+                        offsetY += dy;
+                        frame.setLocation(frame.getX() + dx, frame.getY() + dy);
+                    }
+                }
+            });
+            panel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    dragElement = -1;
                 }
             });
             frame.setContentPane(panel);
-            frame.setSize(720, 390);
+            frame.setSize(900, 600);
             frame.setLocation(0, 0);
             frame.setVisible(true);
             setClickThrough(frame, true);
@@ -159,10 +180,26 @@ public final class DesktopHudOverlay {
                 previousEditor = editor;
             }
             Snapshot s = STATE.get();
-            frame.setBounds(s.x + offsetX, s.y + offsetY, 720, 390);
+            frame.setBounds(s.x + offsetX, s.y + offsetY, 900, 600);
             if (!frame.isVisible()) frame.setVisible(true);
             panel.repaint();
         });
+    }
+
+    private static int findWidget(int x, int y) {
+        for (int i = 0; i < WIDGET_X.length; i++) {
+            boolean visible = switch (i) {
+                case 0 -> ModuleController.hudCoordinates || ModuleController.hudFps
+                        || ModuleController.hudPing || ModuleController.hudSpeed || ModuleController.hudEffects;
+                case 1 -> ModuleController.hudModuleList;
+                case 2 -> ModuleController.hudKeystrokes;
+                case 3 -> ModuleController.hudTargetInfo;
+                default -> ModuleController.hudCps;
+            };
+            if (visible && x >= WIDGET_X[i] && x <= WIDGET_X[i] + WIDGET_W[i]
+                    && y >= WIDGET_Y[i] && y <= WIDGET_Y[i] + WIDGET_H[i]) return i;
+        }
+        return -1;
     }
 
     private static String activeModules() {
@@ -218,7 +255,7 @@ public final class DesktopHudOverlay {
                             String coords, String fps, String ping, String speed, String effects,
                             String target, String targetStats, String keys, String modules, String cps,
                             boolean editor) {
-        private static final Snapshot EMPTY = new Snapshot(0, 0, 720, 390,
+        private static final Snapshot EMPTY = new Snapshot(0, 0, 900, 600,
                 "", "", "", "", "", "", "", "", "", "", false);
     }
 
@@ -239,56 +276,60 @@ public final class DesktopHudOverlay {
                 g.drawString("SYSTEMS REBORN", 32, 42);
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-                int line = 64;
+                int line = y + 46;
                 for (String value : new String[]{s.coords, s.fps, s.ping, s.speed, s.effects}) {
                     if (!value.isEmpty()) {
-                        g.drawString(value, 32, line);
+                        g.drawString(value, x + 14, line);
                         line += 17;
                     }
                 }
 
                 if (!s.modules.isEmpty()) {
-                    drawPanel(g, 318, 18, 380, 62, accent);
+                    int x = WIDGET_X[1], y = WIDGET_Y[1];
+                    drawPanel(g, x, y, 380, 62, accent);
                     g.setColor(accent);
-                    g.drawString("MODULE LIST", 332, 40);
+                    g.drawString("MODULE LIST", x + 14, y + 22);
                     g.setColor(Color.WHITE);
                     g.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-                    g.drawString(s.modules, 332, 61);
+                    g.drawString(s.modules, x + 14, y + 43);
                 }
 
                 if (!s.keys.isEmpty()) {
-                    drawPanel(g, 18, 142, 350, 54, accent);
+                    int x = WIDGET_X[2], y = WIDGET_Y[2];
+                    drawPanel(g, x, y, 350, 54, accent);
                     g.setColor(accent);
-                    g.drawString("KEYSTROKES", 32, 164);
+                    g.drawString("KEYSTROKES", x + 14, y + 22);
                     g.setColor(Color.WHITE);
                     g.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-                    g.drawString(s.keys, 32, 184);
+                    g.drawString(s.keys, x + 14, y + 42);
                 }
 
                 if (!s.target.isEmpty()) {
-                    drawPanel(g, 18, 208, 350, 70, accent);
+                    int x = WIDGET_X[3], y = WIDGET_Y[3];
+                    drawPanel(g, x, y, 350, 70, accent);
                     g.setColor(accent);
-                    g.drawString("COMBAT HUD", 32, 231);
+                    g.drawString("COMBAT HUD", x + 14, y + 23);
                     g.setColor(Color.WHITE);
                     g.setFont(new Font("Segoe UI", Font.BOLD, 12));
-                    g.drawString(s.target, 32, 250);
+                    g.drawString(s.target, x + 14, y + 42);
                     g.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-                    g.drawString(s.targetStats, 32, 268);
+                    g.drawString(s.targetStats, x + 14, y + 60);
                 }
 
                 if (!s.cps.isEmpty()) {
-                    drawPanel(g, 382, 142, 145, 54, accent);
+                    int x = WIDGET_X[4], y = WIDGET_Y[4];
+                    drawPanel(g, x, y, 145, 54, accent);
                     g.setColor(accent);
-                    g.drawString("CLICKS", 396, 164);
+                    g.drawString("CLICKS", x + 14, y + 22);
                     g.setColor(Color.WHITE);
                     g.setFont(new Font("Segoe UI", Font.BOLD, 16));
-                    g.drawString(s.cps, 396, 185);
+                    g.drawString(s.cps, x + 14, y + 43);
                 }
 
                 if (s.editor) {
                     g.setColor(new Color(255, 255, 255, 220));
                     g.setFont(new Font("Segoe UI", Font.BOLD, 12));
-                    g.drawString("HUD EDITOR: DRAG THE OVERLAY TO MOVE IT  |  F7 TO EXIT", 18, 315);
+                    g.drawString("HUD EDITOR: DRAG PANELS TO REPOSITION  |  F7 TO EXIT", 18, 360);
                 }
             } finally {
                 g.dispose();
