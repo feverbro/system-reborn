@@ -110,7 +110,7 @@ public final class DesktopHudOverlay {
 
     private static void enableClickThrough(JFrame window) {
         try {
-            Pointer hwnd = new Pointer(Native.getComponentID(window));
+            Pointer hwnd = Native.getComponentPointer(window);
             Function get = NativeLibrary.getInstance("user32").getFunction("GetWindowLongW");
             Function set = NativeLibrary.getInstance("user32").getFunction("SetWindowLongW");
             int style = get.invokeInt(new Object[]{hwnd, -20});
