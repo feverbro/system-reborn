@@ -21,6 +21,9 @@ public final class SystemsReborn implements ClientModInitializer {
         hudToggleKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.systemsreborn.hud", GLFW.GLFW_KEY_F8,
                 KeyMapping.Category.MISC));
+        hudEditorKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.systemsreborn.hud_editor", GLFW.GLFW_KEY_F7,
+                KeyMapping.Category.MISC));
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> DesktopHudOverlay.close());
         DesktopHudOverlay.start();
@@ -33,6 +36,9 @@ public final class SystemsReborn implements ClientModInitializer {
         }
         while (hudToggleKey.consumeClick()) {
             ModuleController.desktopHud = !ModuleController.desktopHud;
+        }
+        while (hudEditorKey.consumeClick()) {
+            DesktopHudOverlay.openEditor();
         }
         ModuleController.tick(client);
         if (ModuleController.desktopHud) DesktopHudOverlay.update(client);
