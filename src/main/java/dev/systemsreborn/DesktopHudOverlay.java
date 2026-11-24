@@ -5,6 +5,7 @@ import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.Pointer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.EntityHitResult;
 import org.lwjgl.glfw.GLFW;
 
 import javax.swing.JFrame;
@@ -62,12 +63,20 @@ public final class DesktopHudOverlay {
         String coords = mc.player == null ? "XYZ  --" : String.format(Locale.ROOT,
                 "XYZ  %.1f  %.1f  %.1f", mc.player.getX(), mc.player.getY(), mc.player.getZ());
         String fps = "FPS  " + Minecraft.getInstance().getFps();
+        String target = mc.hitResult instanceof EntityHitResult hit
+                ? "TARGET  " + hit.getEntity().getName().getString() : "TARGET  --";
+        String keys = "W " + key(mc.options.keyUp.isDown())
+                + "  A " + key(mc.options.keyLeft.isDown())
+                + "  S " + key(mc.options.keyDown.isDown())
+                + "  D " + key(mc.options.keyRight.isDown())
+                + "  SPACE " + key(mc.options.keyJump.isDown())
+                + "  SHIFT " + key(mc.options.keyShift.isDown());
         String modules = "AIM " + on(ModuleController.aimAssist)
                 + "   TRIGGER " + on(ModuleController.triggerBot)
                 + "   SPRINT " + on(ModuleController.autoSprint)
                 + "   TOOL " + on(ModuleController.autoTool);
         STATE.set(new Snapshot(x[0], y[0], Math.max(1, width[0]), Math.max(1, height[0]),
-                coords, fps, modules));
+                coords, fps, target, keys, modules));
 
         SwingUtilities.invokeLater(() -> {
             if (frame == null || panel == null) return;
@@ -97,6 +106,7 @@ public final class DesktopHudOverlay {
     }
 
     private static String on(boolean value) { return value ? "ON" : "OFF"; }
+    private static String key(boolean value) { return value ? "[X]" : "[ ]"; }
 
     private static void enableClickThrough(JFrame window) {
         try {
@@ -112,9 +122,9 @@ public final class DesktopHudOverlay {
     }
 
     private record Snapshot(int x, int y, int width, int height,
-                            String coords, String fps, String modules) {
+                            String coords, String fps, String target, String keys, String modules) {
         private static final Snapshot EMPTY =
-                new Snapshot(0, 0, 640, 360, "XYZ  --", "FPS  --", "");
+                new Snapshot(0, 0, 640, 360, "XYZ  --", "FPS  --", "TARGET  --", "", "");
     }
 
     private static final class HudPanel extends JPanel {
@@ -134,9 +144,15 @@ public final class DesktopHudOverlay {
                 g.drawString(s.coords, 32, 64);
                 g.drawString(s.fps, 32, 84);
 
-                drawPanel(g, 18, 110, 330, 48);
+                drawPanel(g, 18, 110, 390, 48);
                 g.setColor(new Color(210, 220, 238));
                 g.drawString(s.modules, 32, 139);
+
+                drawPanel(g, 18, 168, 390, 58);
+                g.setColor(Color.WHITE);
+                g.drawString(s.target, 32, 190);
+                g.setColor(new Color(210, 220, 238));
+                g.drawString(s.keys, 32, 211);
             } finally {
                 g.dispose();
             }
