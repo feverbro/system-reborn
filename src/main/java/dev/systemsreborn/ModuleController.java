@@ -35,7 +35,6 @@ public final class ModuleController {
     private static int clickDelayTicks;
     private static int auraDelayTicks;
     private static int sprintResetTicks;
-    private static boolean sprintResetPending;
 
     private static final float[] HUD_SCALES = {0.80f, 1.0f, 1.20f};
     private static final int[] ACCENTS = {0xFF74B2FF, 0xFF9B7BFF, 0xFF55D6A2, 0xFFFFB45E};
