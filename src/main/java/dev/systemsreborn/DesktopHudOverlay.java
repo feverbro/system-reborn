@@ -40,7 +40,7 @@ public final class DesktopHudOverlay {
     private static int dragElement = -1;
     private static final int[] WIDGET_X = {18, 318, 18, 18, 382};
     private static final int[] WIDGET_Y = {18, 18, 142, 208, 142};
-    private static final int[] WIDGET_W = {285, 380, 350, 350, 145};
+    private static final int[] WIDGET_W = {285, 560, 350, 350, 145};
     private static final int[] WIDGET_H = {112, 62, 54, 70, 54};
 
     private DesktopHudOverlay() {}
@@ -290,7 +290,7 @@ public final class DesktopHudOverlay {
 
                 if (!s.modules.isEmpty()) {
                     int x = WIDGET_X[1], y = WIDGET_Y[1];
-                    drawPanel(g, x, y, 380, 62, accent);
+                    drawPanel(g, x, y, 560, 62, accent);
                     g.setColor(accent);
                     g.setFont(new Font("Segoe UI", Font.BOLD, 14));
                     g.drawString("MODULE LIST", x + 14, y + 22);
