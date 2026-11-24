@@ -2,103 +2,183 @@ package dev.systemsreborn;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public final class ModuleController {
     public static volatile boolean aimAssist = false;
+    public static volatile boolean aimBot = false;
+    public static volatile boolean legitAura = false;
     public static volatile boolean triggerBot = false;
+    public static volatile boolean clickAssist = false;
+    public static volatile boolean wTap = false;
+    public static volatile boolean sTap = false;
     public static volatile boolean autoSprint = false;
-    public static volatile boolean autoTool = false;
     public static volatile boolean desktopHud = true;
 
+    public static volatile boolean hudModuleList = true;
+    public static volatile boolean hudKeystrokes = true;
+    public static volatile boolean hudCps = true;
+    public static volatile boolean hudFps = true;
+    public static volatile boolean hudPing = true;
+    public static volatile boolean hudCoordinates = true;
+    public static volatile boolean hudSpeed = true;
+    public static volatile boolean hudTargetInfo = true;
+    public static volatile boolean hudArmor = true;
+    public static volatile boolean hudEffects = true;
+    public static volatile boolean hudEditor = false;
+
+    private static volatile int hudScaleIndex = 1;
+    private static volatile int accentIndex = 0;
     private static int triggerDelayTicks;
+    private static int clickDelayTicks;
+    private static int auraDelayTicks;
+    private static int sprintResetTicks;
+    private static boolean sprintResetPending;
+
+    private static final float[] HUD_SCALES = {0.80f, 1.0f, 1.20f};
+    private static final int[] ACCENTS = {0xFF74B2FF, 0xFF9B7BFF, 0xFF55D6A2, 0xFFFFB45E};
 
     private ModuleController() {}
 
     public static void tick(Minecraft mc) {
+        if (triggerDelayTicks > 0) triggerDelayTicks--;
+        if (clickDelayTicks > 0) clickDelayTicks--;
+        if (auraDelayTicks > 0) auraDelayTicks--;
+        if (sprintResetTicks > 0) {
+            mc.player.setSprinting(false);
+            sprintResetTicks--;
+        }
+
         if (mc.player == null || mc.level == null || mc.screen != null) return;
 
-        if (autoSprint && mc.options.keyUp.isDown()) mc.player.setSprinting(true);
-        if (aimAssist) runAimAssist(mc);
-        if (triggerBot) runTriggerBot(mc);
-        if (autoTool) runAutoTool(mc);
-        if (triggerDelayTicks > 0) triggerDelayTicks--;
+        if (autoSprint && mc.options.keyUp.isDown() && sprintResetTicks == 0) {
+            mc.player.setSprinting(true);
+        }
+
+        if (aimAssist && mc.options.keyAttack.isDown()) {
+            Player target = findTarget(mc, 4.5, 10.0);
+            if (target != null) rotateTo(mc, target, 0.10f);
+        }
+
+        if (aimBot && mc.options.keyAttack.isDown()) {
+            Player target = findTarget(mc, 6.0, 28.0);
+            if (target != null) rotateTo(mc, target, 0.32f);
+        }
+
+        if (legitAura && auraDelayTicks == 0) {
+            Player target = findTarget(mc, 3.2, 32.0);
+            if (target != null) {
+                double angle = angleTo(mc, target);
+                rotateTo(mc, target, 0.20f);
+                if (angle <= 5.0 && attack(mc, target)) {
+                    auraDelayTicks = 4;
+                    afterHit(mc);
+                }
+            }
+        }
+
+        Player crosshairTarget = getCrosshairPlayer(mc);
+        if (triggerBot && triggerDelayTicks == 0 && crosshairTarget != null) {
+            if (attack(mc, crosshairTarget)) {
+                triggerDelayTicks = 3;
+                afterHit(mc);
+            }
+        }
+
+        if (clickAssist && mc.options.keyAttack.isDown()
+                && clickDelayTicks == 0 && crosshairTarget != null) {
+            if (attack(mc, crosshairTarget)) {
+                clickDelayTicks = 2;
+                afterHit(mc);
+            }
+        }
     }
 
-    private static void runAimAssist(Minecraft mc) {
+    private static Player findTarget(Minecraft mc, double maxDistance, double maxAngle) {
         Player self = mc.player;
-        if (!mc.options.keyAttack.isDown()) return;
-
         Player best = null;
         double bestScore = Double.MAX_VALUE;
-        final double maxDistance = 4.5;
-        final double maxAngle = 10.0;
 
         for (Player candidate : mc.level.players()) {
             if (candidate == self || !candidate.isAlive() || candidate.isSpectator()) continue;
             if (!candidate.isAttackable() || !self.hasLineOfSight(candidate)) continue;
-
             double distance = self.distanceTo(candidate);
             if (distance > maxDistance) continue;
 
-            var delta = candidate.getEyePosition().subtract(self.getEyePosition());
-            double targetYaw = Math.toDegrees(Math.atan2(delta.z, delta.x)) - 90.0;
-            double targetPitch = -Math.toDegrees(Math.atan2(
-                    delta.y, Math.sqrt(delta.x * delta.x + delta.z * delta.z)));
-            double yawDiff = wrapDegrees(targetYaw - self.getYRot());
-            double pitchDiff = targetPitch - self.getXRot();
-            double angle = Math.hypot(yawDiff, pitchDiff);
+            double angle = angleTo(mc, candidate);
             if (angle > maxAngle) continue;
-
             double score = angle + distance * 0.015;
             if (score < bestScore) {
                 bestScore = score;
                 best = candidate;
             }
         }
+        return best;
+    }
 
-        if (best == null) return;
-        var delta = best.getEyePosition().subtract(self.getEyePosition());
+    private static double angleTo(Minecraft mc, Player target) {
+        Vec3 delta = target.getEyePosition().subtract(mc.player.getEyePosition());
+        double targetYaw = Math.toDegrees(Math.atan2(delta.z, delta.x)) - 90.0;
+        double targetPitch = -Math.toDegrees(Math.atan2(
+                delta.y, Math.sqrt(delta.x * delta.x + delta.z * delta.z)));
+        double yawDiff = wrapDegrees(targetYaw - mc.player.getYRot());
+        double pitchDiff = targetPitch - mc.player.getXRot();
+        return Math.hypot(yawDiff, pitchDiff);
+    }
+
+    private static void rotateTo(Minecraft mc, Player target, float strength) {
+        Vec3 delta = target.getEyePosition().subtract(mc.player.getEyePosition());
         float targetYaw = (float) (Math.toDegrees(Math.atan2(delta.z, delta.x)) - 90.0);
         float targetPitch = (float) -Math.toDegrees(Math.atan2(
                 delta.y, Math.sqrt(delta.x * delta.x + delta.z * delta.z)));
-        self.setYRot(self.getYRot() + (float) (wrapDegrees(targetYaw - self.getYRot()) * 0.10));
-        self.setXRot(self.getXRot() + (targetPitch - self.getXRot()) * 0.10f);
+        mc.player.setYRot(mc.player.getYRot()
+                + (float) (wrapDegrees(targetYaw - mc.player.getYRot()) * strength));
+        mc.player.setXRot(mc.player.getXRot()
+                + (targetPitch - mc.player.getXRot()) * strength);
     }
 
-    private static void runTriggerBot(Minecraft mc) {
-        if (triggerDelayTicks > 0 || mc.hitResult == null
-                || !(mc.hitResult instanceof EntityHitResult hit)) return;
-        Entity target = hit.getEntity();
-        if (!(target instanceof Player player) || player == mc.player
-                || !player.isAlive() || player.isSpectator()) return;
-        if (!mc.player.hasLineOfSight(player) || mc.player.distanceTo(player) > 4.2) return;
-        if (!mc.options.keyAttack.isDown() || mc.gameMode == null) return;
-        if (mc.player.getAttackStrengthScale(0.0f) < 1.0f) return;
-
-        mc.gameMode.attack(mc.player, player);
-        mc.player.swing(InteractionHand.MAIN_HAND);
-        triggerDelayTicks = 3;
-    }
-
-    private static void runAutoTool(Minecraft mc) {
-        if (!mc.options.keyAttack.isDown() || mc.hitResult == null
-                || !(mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit)) return;
-        var state = mc.level.getBlockState(hit.getBlockPos());
-        var inventory = mc.player.getInventory();
-        int bestSlot = inventory.getSelectedSlot();
-        float bestSpeed = inventory.getItem(bestSlot).getDestroySpeed(state);
-
-        for (int slot = 0; slot < 9; slot++) {
-            float speed = inventory.getItem(slot).getDestroySpeed(state);
-            if (speed > bestSpeed) {
-                bestSpeed = speed;
-                bestSlot = slot;
-            }
+    private static Player getCrosshairPlayer(Minecraft mc) {
+        if (mc.hitResult instanceof EntityHitResult hit
+                && hit.getEntity() instanceof Player player
+                && player != mc.player && player.isAlive() && !player.isSpectator()
+                && mc.player.hasLineOfSight(player) && mc.player.distanceTo(player) <= 4.2) {
+            return player;
         }
-        inventory.setSelectedSlot(bestSlot);
+        return null;
+    }
+
+    private static boolean attack(Minecraft mc, Player target) {
+        if (mc.gameMode == null || mc.player.getAttackStrengthScale(0.0f) < 1.0f) return false;
+        mc.gameMode.attack(mc.player, target);
+        mc.player.swing(InteractionHand.MAIN_HAND);
+        return true;
+    }
+
+    private static void afterHit(Minecraft mc) {
+        if (wTap) sprintResetTicks = Math.max(sprintResetTicks, 2);
+        if (sTap) {
+            Vec3 velocity = mc.player.getDeltaMovement();
+            mc.player.setDeltaMovement(velocity.x * 0.65, velocity.y, velocity.z * 0.65);
+            mc.player.setSprinting(false);
+        }
+    }
+
+    public static float hudScale() {
+        return HUD_SCALES[hudScaleIndex];
+    }
+
+    public static void cycleHudScale() {
+        hudScaleIndex = (hudScaleIndex + 1) % HUD_SCALES.length;
+    }
+
+    public static int accentColor() {
+        return ACCENTS[accentIndex];
+    }
+
+    public static void cycleAccentColor() {
+        accentIndex = (accentIndex + 1) % ACCENTS.length;
     }
 
     private static double wrapDegrees(double value) {
