@@ -16,7 +16,11 @@ public final class ClickGuiScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
-        renderBackground(g, mouseX, mouseY, delta);
+        // Let Screen render its background exactly once before drawing this GUI.
+        // Calling renderBackground() here and then super.render() caused the
+        // Minecraft 1.21.11 "Can only blur once per frame" crash.
+        super.render(g, mouseX, mouseY, delta);
+
         int left = (this.width - WIDTH) / 2;
         int top = (this.height - 125) / 2;
         g.fill(left, top, left + WIDTH, top + 125, 0xEE10131C);
@@ -33,7 +37,6 @@ public final class ClickGuiScreen extends Screen {
             g.drawString(this.font, enabled ? "ON" : "OFF", left + WIDTH - 42, y + 7,
                     enabled ? 0xFF65E6A0 : 0xFF9AA3B2);
         }
-        super.render(g, mouseX, mouseY, delta);
     }
 
     @Override
