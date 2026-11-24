@@ -1,6 +1,7 @@
 package dev.systemsreborn;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
@@ -21,6 +22,7 @@ public final class SystemsReborn implements ClientModInitializer {
                 "key.systemsreborn.hud", GLFW.GLFW_KEY_F8,
                 KeyMapping.Category.MISC));
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> DesktopHudOverlay.close());
         DesktopHudOverlay.start();
     }
 
