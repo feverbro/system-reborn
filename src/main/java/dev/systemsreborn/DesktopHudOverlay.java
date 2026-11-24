@@ -50,6 +50,11 @@ public final class DesktopHudOverlay {
     public static void update(Minecraft mc) {
         if (!WINDOWS || mc == null || mc.getWindow() == null) return;
         long handle = mc.getWindow().handle();
+        if (GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_FOCUSED) != GLFW.GLFW_TRUE) {
+            hide();
+            return;
+        }
+
         int[] x = new int[1], y = new int[1], width = new int[1], height = new int[1];
         GLFW.glfwGetWindowPos(handle, x, y);
         GLFW.glfwGetFramebufferSize(handle, width, height);
@@ -68,6 +73,7 @@ public final class DesktopHudOverlay {
             if (frame == null || panel == null) return;
             Snapshot s = STATE.get();
             frame.setBounds(s.x, s.y, s.width, s.height);
+            if (!frame.isVisible()) frame.setVisible(true);
             panel.repaint();
         });
     }
@@ -75,7 +81,7 @@ public final class DesktopHudOverlay {
     public static void hide() {
         if (!WINDOWS) return;
         SwingUtilities.invokeLater(() -> {
-            if (frame != null) frame.setVisible(false);
+            if (frame != null && frame.isVisible()) frame.setVisible(false);
         });
     }
 
