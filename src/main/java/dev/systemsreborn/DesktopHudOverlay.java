@@ -205,9 +205,10 @@ public final class DesktopHudOverlay {
             Function set = NativeLibrary.getInstance("user32").getFunction("SetWindowLongW");
             int style = get.invokeInt(new Object[]{hwnd, -20});
             int flags = 0x00080000 | 0x00000080 | 0x08000000;
-            if (enabled) flags |= 0x00000020;
-            else style &= ~0x00000020;
-            set.invokeInt(new Object[]{hwnd, -20, enabled ? style | flags : style | flags});
+            int updated = style | flags;
+            if (enabled) updated |= 0x00000020;
+            else updated &= ~0x00000020;
+            set.invokeInt(new Object[]{hwnd, -20, updated});
         } catch (Throwable ignored) {
             // Keep the overlay visible if native window styling is unavailable.
         }
