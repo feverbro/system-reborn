@@ -17,6 +17,7 @@ public final class SystemsReborn implements ClientModInitializer {
                 "key.systemsreborn.clickgui", GLFW.GLFW_KEY_RIGHT_SHIFT,
                 KeyMapping.Category.MISC));
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
+        DesktopHudOverlay.start();
     }
 
     private void onClientTick(Minecraft client) {
@@ -25,5 +26,7 @@ public final class SystemsReborn implements ClientModInitializer {
             else if (client.screen instanceof ClickGuiScreen) client.setScreen(null);
         }
         ModuleController.tick(client);
+        if (ModuleController.desktopHud) DesktopHudOverlay.update(client);
+        else DesktopHudOverlay.hide();
     }
 }
