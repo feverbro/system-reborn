@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "systemsreborn",
+  "version": "${version}",
+  "name": "SYSTEMS REBORN",
+  "description": "A clean-room client-side Fabric mod for Minecraft 1.21.11.",
+  "environment": "client",
+  "entrypoints": { "client": ["dev.systemsreborn.SystemsReborn"] },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
