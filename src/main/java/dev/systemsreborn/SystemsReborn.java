@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFW;
 public final class SystemsReborn implements ClientModInitializer {
     public static final String MOD_ID = "systemsreborn";
     private static KeyMapping clickGuiKey;
-    private static KeyMapping hudToggleKey;
+    private static KeyMapping hudToggleKey;\n    private static KeyMapping hudEditorKey;
 
     @Override
     public void onInitializeClient() {
