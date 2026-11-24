@@ -271,16 +271,20 @@ public final class DesktopHudOverlay {
                 Color accent = new Color(ModuleController.accentColor(), true);
                 g.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-                drawPanel(g, 18, 18, 285, 112, accent);
-                g.setColor(accent);
-                g.drawString("SYSTEMS REBORN", 32, 42);
-                g.setColor(Color.WHITE);
-                g.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-                int line = y + 46;
-                for (String value : new String[]{s.coords, s.fps, s.ping, s.speed, s.effects}) {
-                    if (!value.isEmpty()) {
-                        g.drawString(value, x + 14, line);
-                        line += 17;
+                if (!s.coords.isEmpty() || !s.fps.isEmpty() || !s.ping.isEmpty()
+                        || !s.speed.isEmpty() || !s.effects.isEmpty()) {
+                    int x = WIDGET_X[0], y = WIDGET_Y[0];
+                    drawPanel(g, x, y, 285, 112, accent);
+                    g.setColor(accent);
+                    g.drawString("SYSTEMS REBORN", x + 14, y + 24);
+                    g.setColor(Color.WHITE);
+                    g.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                    int line = y + 46;
+                    for (String value : new String[]{s.coords, s.fps, s.ping, s.speed, s.effects}) {
+                        if (!value.isEmpty()) {
+                            g.drawString(value, x + 14, line);
+                            line += 17;
+                        }
                     }
                 }
 
@@ -288,6 +292,7 @@ public final class DesktopHudOverlay {
                     int x = WIDGET_X[1], y = WIDGET_Y[1];
                     drawPanel(g, x, y, 380, 62, accent);
                     g.setColor(accent);
+                    g.setFont(new Font("Segoe UI", Font.BOLD, 14));
                     g.drawString("MODULE LIST", x + 14, y + 22);
                     g.setColor(Color.WHITE);
                     g.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -298,6 +303,7 @@ public final class DesktopHudOverlay {
                     int x = WIDGET_X[2], y = WIDGET_Y[2];
                     drawPanel(g, x, y, 350, 54, accent);
                     g.setColor(accent);
+                    g.setFont(new Font("Segoe UI", Font.BOLD, 14));
                     g.drawString("KEYSTROKES", x + 14, y + 22);
                     g.setColor(Color.WHITE);
                     g.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -308,6 +314,7 @@ public final class DesktopHudOverlay {
                     int x = WIDGET_X[3], y = WIDGET_Y[3];
                     drawPanel(g, x, y, 350, 70, accent);
                     g.setColor(accent);
+                    g.setFont(new Font("Segoe UI", Font.BOLD, 14));
                     g.drawString("COMBAT HUD", x + 14, y + 23);
                     g.setColor(Color.WHITE);
                     g.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -320,6 +327,7 @@ public final class DesktopHudOverlay {
                     int x = WIDGET_X[4], y = WIDGET_Y[4];
                     drawPanel(g, x, y, 145, 54, accent);
                     g.setColor(accent);
+                    g.setFont(new Font("Segoe UI", Font.BOLD, 14));
                     g.drawString("CLICKS", x + 14, y + 22);
                     g.setColor(Color.WHITE);
                     g.setFont(new Font("Segoe UI", Font.BOLD, 16));
@@ -329,7 +337,7 @@ public final class DesktopHudOverlay {
                 if (s.editor) {
                     g.setColor(new Color(255, 255, 255, 220));
                     g.setFont(new Font("Segoe UI", Font.BOLD, 12));
-                    g.drawString("HUD EDITOR: DRAG PANELS TO REPOSITION  |  F7 TO EXIT", 18, 360);
+                    g.drawString("HUD EDITOR: DRAG PANELS TO REPOSITION  |  F7 TO EXIT", 18, 560);
                 }
             } finally {
                 g.dispose();
