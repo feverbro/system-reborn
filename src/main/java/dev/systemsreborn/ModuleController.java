@@ -46,12 +46,12 @@ public final class ModuleController {
         if (triggerDelayTicks > 0) triggerDelayTicks--;
         if (clickDelayTicks > 0) clickDelayTicks--;
         if (auraDelayTicks > 0) auraDelayTicks--;
+        if (mc.player == null || mc.level == null) return;
         if (sprintResetTicks > 0) {
             mc.player.setSprinting(false);
             sprintResetTicks--;
         }
-
-        if (mc.player == null || mc.level == null || mc.screen != null) return;
+        if (mc.screen != null) return;
 
         if (autoSprint && mc.options.keyUp.isDown() && sprintResetTicks == 0) {
             mc.player.setSprinting(true);
