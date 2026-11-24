@@ -6,9 +6,11 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public final class ClickGuiScreen extends Screen {
-    private static final int WIDTH = 230;
-    private static final int ROW = 25;
-    private static final String[] MODULES = {"Aim Assist", "TriggerBot", "Auto Sprint"};
+    private static final int WIDTH = 270;
+    private static final int ROW = 29;
+    private static final String[] MODULES = {
+            "Aim Assist", "TriggerBot", "Auto Sprint", "Auto Tool", "Desktop HUD"
+    };
 
     public ClickGuiScreen() {
         super(Component.literal("SYSTEMS REBORN"));
@@ -17,20 +19,23 @@ public final class ClickGuiScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
         renderBackground(g, mouseX, mouseY, delta);
+        int height = 48 + MODULES.length * ROW;
         int left = (this.width - WIDTH) / 2;
-        int top = (this.height - 125) / 2;
-        g.fill(left, top, left + WIDTH, top + 125, 0xEE10131C);
-        g.fill(left, top, left + WIDTH, top + 28, 0xFF252B3B);
-        g.drawString(this.font, "SYSTEMS REBORN", left + 12, top + 10, 0xFFFFFFFF);
+        int top = (this.height - height) / 2;
+        g.fill(left, top, left + WIDTH, top + height, 0xF010131C);
+        g.fill(left, top, left + WIDTH, top + 34, 0xFF252B3B);
+        g.drawString(this.font, "SYSTEMS REBORN", left + 14, top + 12, 0xFFFFFFFF);
+        g.drawString(this.font, "LEGIT CLIENT  /  1.21.11", left + 14, top + 41, 0xFF9AA8C0);
+
         for (int i = 0; i < MODULES.length; i++) {
             boolean enabled = enabled(i);
-            int y = top + 36 + i * ROW;
-            boolean hovered = mouseX >= left + 8 && mouseX <= left + WIDTH - 8
-                    && mouseY >= y && mouseY <= y + 21;
-            g.fill(left + 8, y, left + WIDTH - 8, y + 21,
+            int y = top + 59 + i * ROW;
+            boolean hovered = mouseX >= left + 9 && mouseX <= left + WIDTH - 9
+                    && mouseY >= y && mouseY <= y + 24;
+            g.fill(left + 9, y, left + WIDTH - 9, y + 24,
                     hovered ? 0xFF343D52 : 0xFF202635);
-            g.drawString(this.font, MODULES[i], left + 16, y + 7, 0xFFFFFFFF);
-            g.drawString(this.font, enabled ? "ON" : "OFF", left + WIDTH - 42, y + 7,
+            g.drawString(this.font, MODULES[i], left + 17, y + 8, 0xFFFFFFFF);
+            g.drawString(this.font, enabled ? "ON" : "OFF", left + WIDTH - 43, y + 8,
                     enabled ? 0xFF65E6A0 : 0xFF9AA3B2);
         }
         super.render(g, mouseX, mouseY, delta);
@@ -39,14 +44,13 @@ public final class ClickGuiScreen extends Screen {
     @Override
     public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         if (click.button() == 0) {
-            double mouseX = click.x();
-            double mouseY = click.y();
+            int height = 48 + MODULES.length * ROW;
             int left = (this.width - WIDTH) / 2;
-            int top = (this.height - 125) / 2;
+            int top = (this.height - height) / 2;
             for (int i = 0; i < MODULES.length; i++) {
-                int y = top + 36 + i * ROW;
-                if (mouseX >= left + 8 && mouseX <= left + WIDTH - 8
-                        && mouseY >= y && mouseY <= y + 21) {
+                int y = top + 59 + i * ROW;
+                if (click.x() >= left + 9 && click.x() <= left + WIDTH - 9
+                        && click.y() >= y && click.y() <= y + 24) {
                     toggle(i);
                     return true;
                 }
@@ -59,7 +63,9 @@ public final class ClickGuiScreen extends Screen {
         return switch (i) {
             case 0 -> ModuleController.aimAssist;
             case 1 -> ModuleController.triggerBot;
-            default -> ModuleController.autoSprint;
+            case 2 -> ModuleController.autoSprint;
+            case 3 -> ModuleController.autoTool;
+            default -> ModuleController.desktopHud;
         };
     }
 
@@ -68,6 +74,8 @@ public final class ClickGuiScreen extends Screen {
             case 0 -> ModuleController.aimAssist = !ModuleController.aimAssist;
             case 1 -> ModuleController.triggerBot = !ModuleController.triggerBot;
             case 2 -> ModuleController.autoSprint = !ModuleController.autoSprint;
+            case 3 -> ModuleController.autoTool = !ModuleController.autoTool;
+            case 4 -> ModuleController.desktopHud = !ModuleController.desktopHud;
         }
     }
 
